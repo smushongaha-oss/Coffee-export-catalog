@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coffee export globe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E8EDEF;--panel:#F5F8F9;--ink:#14283A;--muted:#5B6E7C;--sea:#D3DEE3;--line:#9FB3BF;--cherry:#B5213B;--gold:#D9941A;--rule:#C5D2DA;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D1824;--panel:#132333;--ink:#E6EEF2;--muted:#8EA3B2;--sea:#17304A;--line:#2C4A66;--cherry:#FF5C73;--gold:#F2B544;--rule:#24405A;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0D1824;--panel:#132333;--ink:#E6EEF2;--muted:#8EA3B2;--sea:#17304A;--line:#2C4A66;--cherry:#FF5C73;--gold:#F2B544;--rule:#24405A;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "DM Sans",system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 32px}
+h1{font:700 clamp(26px,5vw,44px)/1.1 Fraunces,Georgia,serif;margin:0 0 6px;letter-spacing:-.01em;max-width:18em}
+.sub{color:var(--muted);margin:0 0 18px;max-width:46em;min-height:3em}
+.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
+.stage{background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:8px;position:relative}
+canvas{display:block;width:100%;aspect-ratio:1/1;touch-action:pan-y;cursor:grab}
+canvas:active{cursor:grabbing}
+.hint{position:absolute;left:14px;bottom:10px;font-size:12px;color:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:10px 4px 2px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.list{background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:6px}
+.row{all:unset;box-sizing:border-box;display:grid;grid-template-columns:22px 128px 1fr 48px;gap:8px;align-items:center;width:100%;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:14px}
+.row:hover{background:var(--bg)}
+.row:focus-visible{outline:2px solid var(--cherry);outline-offset:-2px}
+.row[aria-pressed="true"]{background:var(--bg);box-shadow:inset 3px 0 0 var(--cherry)}
+.rk{color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:10px;border-radius:5px;background:var(--rule);overflow:hidden}
+.bar b{display:block;height:100%;background:var(--cherry);border-radius:5px}
+.v{text-align:right;font-variant-numeric:tabular-nums;font-weight:500}
+.detail{border-top:1px solid var(--rule);margin:6px 10px 8px;padding-top:10px;font-size:14px}.detail h2{font:700 20px Fraunces,Georgia,serif;margin:0 0 4px}.detail h3{font-size:13px;margin:12px 0 2px;color:var(--muted)}.detail p{margin:0 0 4px}.detail a{color:var(--cherry);word-break:break-all}
+.ask,.fbs{all:unset;cursor:pointer;margin-top:10px;padding:7px 12px;border-radius:8px;background:var(--cherry);color:#fff;font-size:13.5px;font-weight:500}.ask:disabled,.fbs:disabled{opacity:.6;cursor:default}.ask:focus-visible,.fbs:focus-visible{outline:2px solid var(--ink);outline-offset:2px}.ans{margin-top:10px;font-size:14px;white-space:pre-wrap}
+.fb{background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:14px 16px;margin-top:20px;max-width:640px}.fb h2{font:700 20px Fraunces,Georgia,serif;margin:0 0 4px}.fb p{margin:0 0 8px;color:var(--muted);font-size:14px}.fb textarea{width:100%;min-height:70px;padding:8px;border:1px solid var(--rule);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}.fb ul{margin:10px 0 0;padding-left:18px;font-size:14px}.fb .msg{font-size:13px;margin-left:10px;color:var(--muted)}
+.note{font-size:12.5px;color:var(--muted);margin:18px 0 0;max-width:60em}
+.reset{all:unset;cursor:pointer;color:var(--cherry);font-size:13px;margin:8px 10px 6px;display:inline-block;text-decoration:underline}
+.reset:focus-visible{outline:2px solid var(--cherry)}
+@media (max-width:820px){.grid{grid-template-columns:1fr}.row{grid-template-columns:22px 104px 1fr 44px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 id="title">Coffee export origins</h1>
+  <p class="sub" id="sub"></p>
+  <div class="grid">
+    <div>
+      <div class="stage">
+        <canvas id="g" role="img" aria-label="Rotating globe showing coffee export flows from producing countries to Europe, the United States, Japan and the Gulf"></canvas>
+        <span class="hint">Drag to rotate. Tap a bubble or a country to focus.</span>
+      </div>
+      <div class="legend"><span><i style="background:var(--cherry)"></i>Origin, sized by volume</span><span><i style="background:var(--gold)"></i>Flow to a destination hub</span></div>
+    </div>
+    <div class="list" id="list" aria-label="Origins ranked by export volume"></div>
+  </div>
+  <section class="fb" id="fb" hidden><h2>Suggest an improvement</h2><p>Missing an origin, a number that looks off, or a view you want? Leave a note. Claude reads the suggestions and updates the page when the owner asks.</p><textarea id="fbt" maxlength="500" aria-label="Your suggestion"></textarea><button class="fbs" id="fbs">Send suggestion</button><span class="msg" id="fbm" role="status"></span><ul id="fbl"></ul></section>
+<p class="note">Source: ICO Coffee Market Report, October 2025. Figures are exports of all forms of coffee in coffee year 2024/25 (October to September), in million 60 kg bags, against 2023/24. Rows marked “Other” are the ICO regional total minus the named countries, and Indonesia, Uganda, Ethiopia and Vietnam’s 2023/24 values are worked back from the ICO’s stated growth rates. This is a snapshot, not a live feed: a published page can’t fetch data from other sites, so ask Claude to refresh it when the ICO releases a new report. The routes are illustrative: each origin’s volume is split across Europe, the USA, Japan and the Gulf by continent, not real shipment data. Contact links are the official websites of each origin’s coffee body.</p>
+</div>
+<script>
+// ICO Coffee Market Report, Oct 2025: exports of all forms of coffee, coffee year 2024/25 vs 2023/24, million 60 kg bags.
+// 'Other' rows = ICO regional total minus the named countries. Region: A Americas, F Africa, S Asia. Sorted by volume.
+const ICO="https://www.ico.org",GEN="A regional total made up of several national bodies. The ICO lists its member countries and their coffee authorities.";
+const DATA=[
+["Brazil",-20,-46,41.11,"A",50.1,"Cecafé, Brazilian Coffee Exporters Council","https://www.cecafe.com.br"],
+["Vietnam",12.7,108,26.86,"S",25.08,"Vietnam Coffee and Cocoa Association (VICOFA)","https://vicofa.org.vn"],
+["Mexico & C. America",15,-89,15.58,"A",14.46,GEN,ICO],
+["Colombia",4.6,-74.1,12.39,"A",10.97,"Federación Nacional de Cafeteros de Colombia","https://federaciondecafeteros.org"],
+["Indonesia",-4,105,9.77,"S",6.69,"Association of Indonesian Coffee Exporters and Industries (AEKI)","https://aeki-aice.org"],
+["Uganda",1.4,32.3,8.26,"F",6.37,"Uganda Coffee Development Authority (UCDA)","https://ugandacoffee.go.ug"],
+["Other Asia",12.9,76.2,7.82,"S",8.96,GEN,ICO],
+["Ethiopia",8,38.7,7.37,"F",5.79,"Ethiopian Coffee and Tea Authority",""],
+["Other S. America",-9.2,-75,5.44,"A",6.15,GEN,ICO],
+["Other Africa",-3,36.5,4.06,"F",4.44,GEN,ICO]];
+const HUBS=[["Europe",51,8],["USA",40.7,-74],["Japan",35.7,139.7],["Gulf",24,55]];
+const SPLIT={A:[.45,.40,.10,.05],F:[.55,.15,.10,.20],S:[.40,.20,.25,.15]};
+const RAD=Math.PI/180, TOTAL=DATA.reduce((s,d)=>s+d[3],0), MAX=DATA[0][3];
+const vec=(la,lo)=>[Math.cos(la*RAD)*Math.sin(lo*RAD),Math.sin(la*RAD),Math.cos(la*RAD)*Math.cos(lo*RAD)];
+const origins=DATA.map(d=>({name:d[0],lat:d[1],lon:d[2],vol:d[3],reg:d[4],prev:d[5],org:d[6],url:d[7],v:vec(d[1],d[2])}));
+const hubs=HUBS.map(h=>({name:h[0],v:vec(h[1],h[2])}));
+const arcs=[];
+origins.forEach(o=>SPLIT[o.reg].forEach((w,i)=>{
+  const a=o.v,b=hubs[i].v,om=Math.acos(Math.max(-1,Math.min(1,a[0]*b[0]+a[1]*b[1]+a[2]*b[2])));
+  const pts=[];for(let k=0;k<=40;k++){const t=k/40,s=Math.sin(om)||1,p=[0,1,2].map(j=>(Math.sin((1-t)*om)*a[j]+Math.sin(t*om)*b[j])/s);
+    const lift=1+.28*Math.sin(Math.PI*t)*Math.min(1,om/2);pts.push({u:p,l:lift});}
+  arcs.push({o,hub:hubs[i],flow:o.vol*w,pts,off:Math.random()});}));
+
+const cv=document.getElementById("g"),ctx=cv.getContext("2d");
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let L0=-1.1,P0=.35,tL=null,tP=null,sel=null,drag=null,W=0,C={};
+function colors(){const s=getComputedStyle(document.documentElement);["sea","line","cherry","gold","ink","panel"].forEach(k=>C[k]=s.getPropertyValue("--"+k).trim());}
+function size(){const r=cv.getBoundingClientRect(),d=devicePixelRatio||1;W=r.width;cv.width=W*d;cv.height=W*d;ctx.setTransform(d,0,0,d,0,0);colors();}
+addEventListener("resize",size);matchMedia("(prefers-color-scheme: dark)").addEventListener("change",size);
+function rot(v){const cl=Math.cos(L0),sl=Math.sin(L0),cp=Math.cos(P0),sp=Math.sin(P0);
+  const x1=v[0]*cl-v[2]*sl,z1=v[0]*sl+v[2]*cl;return[x1,v[1]*cp-z1*sp,v[1]*sp+z1*cp];}
+function scr(v,k){const r=rot(v),R=W*.44;return{x:W/2+R*k*r[0],y:W/2-R*k*r[1],z:r[2]};}
+
+function draw(t){
+  ctx.clearRect(0,0,W,W);const R=W*.44;
+  ctx.beginPath();ctx.arc(W/2,W/2,R,0,7);ctx.fillStyle=C.sea;ctx.fill();
+  ctx.strokeStyle=C.line;ctx.lineWidth=.7;ctx.globalAlpha=.7;
+  for(let la=-60;la<=60;la+=30)line(i=>vec(la,-180+i*4),91);
+  for(let lo=-180;lo<180;lo+=30)line(i=>vec(-88+i*4,lo),45);
+  ctx.globalAlpha=1;
+  // arcs
+  arcs.forEach(a=>{const on=!sel||a.o===sel;ctx.lineWidth=Math.max(.8,a.flow*.28);
+    ctx.strokeStyle=C.gold;ctx.globalAlpha=on?.8:.08;ctx.beginPath();let pen=false;
+    a.pts.forEach(p=>{const s=scr(p.u,p.l);if(s.z>0){pen?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);pen=true}else pen=false;});ctx.stroke();
+    if(on&&!reduce){const q=a.pts[Math.floor(((t/6000+a.off)%1)*40)],s=scr(q.u,q.l);if(s.z>0){ctx.globalAlpha=1;ctx.fillStyle=C.ink;ctx.beginPath();ctx.arc(s.x,s.y,2,0,7);ctx.fill();}}});
+  ctx.globalAlpha=1;
+  // hubs
+  ctx.font="600 11px 'DM Sans',sans-serif";ctx.textAlign="center";
+  hubs.forEach(h=>{const s=scr(h.v,1);if(s.z>0){ctx.fillStyle=C.panel;ctx.strokeStyle=C.ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(s.x,s.y,4.5,0,7);ctx.fill();ctx.stroke();ctx.fillStyle=C.ink;ctx.fillText(h.name,s.x,s.y-9);}});
+  // origins, big first so small ones stay clickable
+  origins.forEach(o=>{o.s=scr(o.v,1);});
+  origins.slice().sort((a,b)=>b.vol-a.vol).forEach(o=>{const s=o.s;if(s.z<=0)return;const on=!sel||o===sel,rad=4+Math.sqrt(o.vol/MAX)*18;
+    ctx.globalAlpha=on?.85:.25;ctx.fillStyle=C.cherry;ctx.beginPath();ctx.arc(s.x,s.y,rad,0,7);ctx.fill();
+    ctx.globalAlpha=on?1:.4;ctx.strokeStyle=C.panel;ctx.lineWidth=1.5;ctx.stroke();
+    if(o.vol>3||o===sel){ctx.fillStyle=C.ink;ctx.fillText(o.name,s.x,s.y+rad+12);}o.r=rad;});
+  ctx.globalAlpha=1;ctx.strokeStyle=C.line;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(W/2,W/2,R,0,7);ctx.stroke();
+}
+function line(f,n){ctx.beginPath();let pen=false;for(let i=0;i<n;i++){const s=scr(f(i),1);if(s.z>0){pen?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y);pen=true}else pen=false;}ctx.stroke();}
+function frame(t){
+  if(tL!==null){let d=tL-L0;d=Math.atan2(Math.sin(d),Math.cos(d));L0+=d*.1;P0+=(tP-P0)*.1;if(Math.abs(d)<.002&&Math.abs(tP-P0)<.002)tL=null;}
+  else if(!drag&&!sel&&!reduce)L0+=.0016;
+  draw(t);requestAnimationFrame(frame);}
+
+// selection and text
+const title=document.getElementById("title"),sub=document.getElementById("sub"),list=document.getElementById("list");
+function pick(o){sel=o;
+  if(o){tL=o.lon*RAD;tP=Math.max(-.5,Math.min(.7,o.lat*RAD*.6+.2));}
+  const rank=origins.indexOf(o||origins[0])+1,top=origins[0];
+  if(o){title.textContent=`${o.name}: ${o.vol.toFixed(1)} M bags`;
+    sub.textContent=`${(o.vol/TOTAL*100).toFixed(0)}% of the exports shown here, ranked ${rank} of ${origins.length}. ${o===top?"It is the largest origin on the chart.":"Brazil is "+(top.vol/o.vol).toFixed(1)+" times larger."}`;}
+  else{title.textContent=`${top.name} ships ${(top.vol/TOTAL*100).toFixed(0)}% of the coffee on this chart`;
+    sub.textContent=`${origins[0].name} and ${origins[1].name} together make up ${((origins[0].vol+origins[1].vol)/TOTAL*100).toFixed(0)}% of the exports shown. Choose an origin to follow its flows to Europe, the USA, Japan and the Gulf.`;}
+  list.querySelectorAll(".row").forEach(r=>r.setAttribute("aria-pressed",String(sel&&r.dataset.n===sel.name)));
+  list.querySelector(".reset").style.display=sel?"inline-block":"none";showDetail();}
+origins.forEach((o,i)=>{const b=document.createElement("button");b.className="row";b.dataset.n=o.name;b.setAttribute("aria-pressed","false");
+  b.innerHTML=`<span class="rk">${i+1}</span><span>${o.name}</span><span class="bar"><b style="width:${o.vol/MAX*100}%"></b></span><span class="v">${o.vol.toFixed(1)}</span>`;
+  b.onclick=()=>pick(sel===o?null:o);list.appendChild(b);});
+const rs=document.createElement("button");rs.className="reset";rs.textContent="Show all origins";rs.onclick=()=>pick(null);list.appendChild(rs);
+
+const detail=document.createElement("div");detail.className="detail";list.appendChild(detail);
+function showDetail(){
+  if(!sel){detail.innerHTML="<p>Choose an origin on the globe or in the list to see its trend and where to contact its coffee body.</p>";return;}
+  const o=sel,ch=(o.vol/o.prev-1)*100;
+  detail.innerHTML=`<h2>${o.name}</h2><p>${o.vol.toFixed(2)} M bags in coffee year 2024/25, ${ch>=0?"up":"down"} ${Math.abs(ch).toFixed(1)}% from ${o.prev.toFixed(2)} M in 2023/24.</p><h3>Contact</h3><p>${o.org}${o.url?`<br><a href="${o.url}" target="_blank" rel="noopener noreferrer">${o.url.replace("https://","")}</a>`:""}</p><button class="ask" id="ask">Ask Claude about ${o.name}</button><div class="ans" id="ans" aria-live="polite"></div>`;wireAsk(o);}
+async function wireAsk(o){
+  const btn=document.getElementById("ask"),ans=document.getElementById("ans");
+  let sample=null;try{sample=window.claude?await claude.use("sample"):null;}catch(e){}
+  if(!sample){btn.remove();return;}
+  btn.onclick=async()=>{btn.disabled=true;ans.textContent="Thinking…";
+    const ch=((o.vol/o.prev-1)*100).toFixed(1);
+    const q=`You are a coffee market analyst writing for a specialty roaster. Use ONLY these ICO figures (million 60 kg bags, coffee year 2024/25 vs 2023/24): ${o.name} ${o.vol} vs ${o.prev} (${ch}%); world total ${TOTAL.toFixed(2)}. In about 80 words of plain text, say what the change may mean for buyers and name one thing to watch. Do not invent other numbers or dates, and say when something is uncertain.`;
+    try{await sample(q,{cache:false,onText:({text})=>{ans.textContent=text;}});}catch(e){ans.textContent="Claude couldn’t answer right now. Try again in a moment.";}
+    btn.disabled=false;};}
+async function initFb(){
+  let db=null;try{db=window.claude?await claude.use("db"):null;}catch(e){}
+  if(!db)return;
+  const fb=document.getElementById("fb"),ta=document.getElementById("fbt"),send=document.getElementById("fbs"),msg=document.getElementById("fbm"),ul=document.getElementById("fbl"),col=db.collection("feedback");
+  fb.hidden=false;
+  col.orderBy("ts","desc").limit(15).onSnapshot(s=>{ul.textContent="";s.docs.forEach(d=>{const x=d.data()||{},li=document.createElement("li");li.textContent=x.text||"";ul.appendChild(li);});},()=>{});
+  send.onclick=async()=>{const t=ta.value.trim();if(!t)return;send.disabled=true;msg.textContent="";
+    try{await col.add({text:t.slice(0,500),ts:Date.now()});ta.value="";msg.textContent="Saved. Thank you.";}
+    catch(e){msg.textContent="Your access level doesn’t allow adding suggestions.";}
+    send.disabled=false;};}
+// pointer
+let moved=0;
+cv.addEventListener("pointerdown",e=>{drag={x:e.clientX,y:e.clientY};moved=0;tL=null;cv.setPointerCapture(e.pointerId);});
+cv.addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;moved+=Math.abs(dx)+Math.abs(dy);
+  L0-=dx*.006*(440/W);P0=Math.max(-.9,Math.min(.9,P0+dy*.005*(440/W)));drag={x:e.clientX,y:e.clientY};});
+cv.addEventListener("pointerup",e=>{drag=null;if(moved>6)return;const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+  let best=null,bd=1e9;origins.forEach(o=>{if(o.s&&o.s.z>0){const d=Math.hypot(o.s.x-x,o.s.y-y);if(d<Math.max(o.r||0,14)&&d<bd){bd=d;best=o;}}});
+  if(best)pick(best===sel?null:best);});
+size();pick(null);requestAnimationFrame(frame);initFb();
+</script>
+</body>
+</html>
